@@ -23,6 +23,7 @@ import javax.swing.JTextField;
 import javax.swing.table.JTableHeader;
 
 import br.furb.model.Tag;
+import br.furb.model.utils.PilhaLista;
 import br.furb.tablemodel.TableModelTag;
 
 public class HtmlAnalyser {
@@ -36,6 +37,8 @@ public class HtmlAnalyser {
 	private JTable table;
 	private String file;
 	private TableModelTag tableModel = new TableModelTag();
+
+	PilhaLista<String> tags = new PilhaLista<>();
 
 	/**
 	 * Launch the application.
@@ -87,6 +90,7 @@ public class HtmlAnalyser {
 				try {
 					analyze(file);
 				} catch (IOException e1) {
+					System.out.println(e1.getMessage());
 				}
 			}
 
@@ -121,67 +125,80 @@ public class HtmlAnalyser {
 		if (!file.exists())
 			return;
 		tableModel.resetList();
+		tags.liberar();
 		BufferedReader br = new BufferedReader(new FileReader(file));
 		String test;
-		StringBuilder builder = new StringBuilder();
 		while ((test = br.readLine()) != null) {
-			builder.append(test);
+			checkLine(test);
 		}
 		br.close();
-		test = builder.toString();
+		long timefin = new Date().getTime();
+		txtMsg.append("\nTime: " + (timefin - timeini));
+	}
 
-		builder = new StringBuilder();
+	private void checkLine(String test) {
+		StringBuilder builder = new StringBuilder();
+		System.out.println("="+test+"=");
 		test = test.replaceAll("<", "|<");
+		System.out.println("=="+test+"==");
 		test = test.replaceAll(">", ">;");
+		System.out.println("==="+test+"===");
 		test = test.replaceAll(";\\|", ";");
+		System.out.println("===="+test+"====");
 		test = test.replaceAll("\\|", ";");
+		System.out.println("====="+test+"=====");
 		String[] resu = test.split(";");
+		System.out.println(resu.length);
 		String erro = null;
-		ArrayList<String> tags = new ArrayList<>();
+
 		for (int i = 0; i < resu.length; i++) {
-			if (!resu[i].matches(VALID_TAG))
+			String aux = resu[i].toLowerCase();
+			System.out.println(aux);
+			if (!aux.matches(VALID_TAG))
 				continue;
-			if (checkTagSingleton(resu[i])) {
+			System.out.println(aux);
+			if (checkTagSingleton(aux)) {
 				// AQUI É TAG SINGLETON (SEM TAG FINAL)
-				String tag = getNameTag(resu[i]);
+				String tag = getNameTag(aux);
 				// AQUI ESTÁ SOMENTE O NOME DA TAG SINGLETON
 				// PRECISA APENAS GUARDAR E CONTABILIZAR
 				tableModel.addQuantidade(tag);
-				builder.append(tag + " =OK=\n");
 				continue;
 			}
 			// DAQUI PRA FRENTE É TAG NORMAL
-			String tag = getNameTag(resu[i]);
-			builder.append(tag+" =Analisando=\n");
+			String tag = getNameTag(aux);
 			// AQUI ESTÁ SOMENTE O NOME DA TAG DUPLA (inicial e final)
 			if (!tag.startsWith("/")) {
-				tags.add(tag);
-				builder.append(tag+" =Adicionado=\n");
+				tags.push(tag);
+				System.out.println("tamanho: "+tags.tamanho());
 				continue;
 			}
 			// PRECISA VERIFICAR SE ELA FECHA CORRETAMENTE E CONTABILIZAR
 			// CASO NÃO FECHAR CORRETAMENTE RETORNA SEU RESPECTIVO ERRO
-			if (tags.size() == 0) {
+			if (tags.tamanho() == 0) {
 				builder.append("final");
 				break;
 			}
-			if (tags.get(tags.size() - 1).equals(tag.substring(1))) {
-				builder.append(tag+" =Removendo=\n");
-				tags.remove(tags.size() - 1);
+			if (tags.peek().equals(tag.substring(1))) {
+				tags.pop();
 				tableModel.addQuantidade(tag.substring(1));
 				continue;
 			} else {
-				erro = "Erro: Não é o final certo = " + tags.get(tags.size() - 1) + " != " + tag;
+				erro = "Erro: Não é o final certo, deve ter a tag </" + tags.peek() + ">";
 				break;
 			}
 		}
-		if (tags.size() != 0 && erro == null) {
-			erro = "Erro: Não foi achado as tags finais"+Arrays.toString(tags.toArray());
+		if (tags.tamanho() != 0 && erro == null) {
+			erro = "Erro: Não foi achado as tags:\n";
+			while (!tags.estaVazia()) {
+				erro += "</" + tags.pop() + ">\n";
+			}
+
 		}
-		if(erro != null)
+		if (erro != null)
 			builder.append(erro);
-		long timefin = new Date().getTime();
-		builder.append("\nTime: " + (timefin - timeini));
+		else
+			builder.append("O arquivo está bem formatado");
 
 		txtMsg.setText(builder.toString());
 	}
@@ -189,7 +206,7 @@ public class HtmlAnalyser {
 	private static String getNameTag(String string) {
 		String[] atr = string.split("\\s");
 		String tag = atr[0].substring(1);
-		return tag = tag.replaceAll(">", "");
+		return tag = tag.replaceAll(">", "").toLowerCase();
 	}
 
 	private static boolean checkTagSingleton(String s) {
