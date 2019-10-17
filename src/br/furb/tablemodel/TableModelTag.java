@@ -1,16 +1,15 @@
 package br.furb.tablemodel;
 
-import java.util.ArrayList;
-
 import javax.swing.table.AbstractTableModel;
 
 import br.furb.model.Tag;
+import br.furb.model.utils.ListaEncadeada;
 
 public class TableModelTag extends AbstractTableModel {
 	private static final long serialVersionUID = 1L;
 
 	// TODO NESSESITA DA LISTA ENCADEADA
-	ArrayList<Tag> tags = new ArrayList<>();
+	ListaEncadeada<Tag> tags = new ListaEncadeada<>();
 	String colunas[] = {"Tag", "Número de ocorrências"};
 	
 	@Override
@@ -26,7 +25,7 @@ public class TableModelTag extends AbstractTableModel {
 	@Override
 	public int getRowCount() {
 		// TODO COLOCAR TAMANHO DA LISTA
-		return tags.size();
+		return tags.obterComprimento();
 	}
 
 	@Override
@@ -34,23 +33,23 @@ public class TableModelTag extends AbstractTableModel {
 		// TODO PEGAR INFORMAÇÕES DA LISTA
 		switch (coluna) {
 		case 0:
-			return tags.get(linha).getNome();
+			return tags.obterInfo(linha).getNome();
 		case 1:
-			return tags.get(linha).getQuantidade();
+			return tags.obterInfo(linha).getQuantidade();
 		default:
-			return tags.get(linha);
+			return tags.obterInfo(linha);
 		}
 	}
 	
 	public void addRow(Tag info) {
 		// TODO ADICIONAR INFORMAÇÕES NA LISTA
-		tags.add(info);
+		tags.inserir(info);
 		fireTableDataChanged();
 	}
 	
 	public void addQuantidade(String a){
-		for (int i = 0; i < tags.size(); i++) {
-			Tag aux = tags.get(i);
+		for (int i = 0; i < tags.obterComprimento(); i++) {
+			Tag aux = tags.obterInfo(i);
 			if (aux.getNome().equals(a)) {
 				aux.setQuantidade(aux.getQuantidade() + 1);
 				fireTableDataChanged();
@@ -61,11 +60,11 @@ public class TableModelTag extends AbstractTableModel {
 	}
 	
 	public void rmvQuantidade(String a){
-		for (int i = 0; i < tags.size(); i++) {
-			Tag aux = tags.get(i);
+		for (int i = 0; i < tags.obterComprimento(); i++) {
+			Tag aux = tags.obterInfo(i);
 			if (aux.getNome().equals(a)) {
 				if(aux.getQuantidade() == 1) {
-					tags.remove(aux);
+					tags.retirar(aux);
 					return;
 				}
 				aux.setQuantidade(aux.getQuantidade() - 1);
@@ -76,7 +75,7 @@ public class TableModelTag extends AbstractTableModel {
 	}
 
 	public void resetList() {
-		tags.clear();
+		tags.liberar();
 		fireTableDataChanged();
 	}
 }

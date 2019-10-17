@@ -10,8 +10,7 @@ public class PilhaLista<T> implements Pilha<T>{
 	
 	@Override
 	public void push(T info) {
-		// TODO Auto-generated method stub
-		this.lista.inserir(info);
+		lista.inserir(info);
 	}
 
 	@Override

@@ -17,7 +17,7 @@ public class ListaEncadeada<T> {
 		NoListaE<T> novo = new NoListaE<>();
 		novo.setInfo(obj);
 		novo.setProximo(primeiro);
-		comp++;
+		comp += 1;
 		this.primeiro = novo;
 	}
 
@@ -78,6 +78,10 @@ public class ListaEncadeada<T> {
 		throw new IndexOutOfBoundsException("Não há essa posição nesta lista!");
 	}
 	
+	public T obterInfo(int index){
+		return obterNo(index).getInfo();
+	}
+	
 	@Override
 	public String toString() {
 		NoListaE<T> p = primeiro;
@@ -88,6 +92,12 @@ public class ListaEncadeada<T> {
 			p = p.getProximo();
 		}
 		return builder.toString();
+	}
+
+	public void liberar() {
+ 		while(comp != 0) {
+ 			retirar(obterInfo(0));
+ 		}
 	}
 	
 }

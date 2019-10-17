@@ -8,8 +8,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 
 import javax.swing.JButton;
@@ -22,14 +20,21 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.table.JTableHeader;
 
-import br.furb.model.Tag;
 import br.furb.model.utils.PilhaLista;
 import br.furb.tablemodel.TableModelTag;
 
+/*
+ * Data: 16 de out de 2019
+ * @author Caetano Siemann e Leonardo Schwab
+ *
+ */
+
 public class HtmlAnalyser {
 
-	private static String RG_TAG_SINGLETONS = "<((meta)|(base)|(br)|(col)|(command)|(embed)|(hr)|(img)|(input)|(link)|(param)|(source)|(!DOCTYPE))(\\s*([^>])*)*>";
-	private static String VALID_TAG = "<(([/]?\\w+(\\s*([^>])*)*)|((!DOCTYPE)(\\s*(\\w)*)*))>";
+	private static final String DOCTYPE = "!DOCTYPE";
+	private static String RG_TAG_SINGLETONS = "(meta)|(base)|(br)|(col)|(command)|(embed)|(hr)|(img)|(input)|(link)|(param)|(source)";
+	@SuppressWarnings("unused")
+	private static String newLine = System.getProperty("line.separator");
 
 	private JFrame frame;
 	private JTextField txtArq;
@@ -38,7 +43,7 @@ public class HtmlAnalyser {
 	private String file;
 	private TableModelTag tableModel = new TableModelTag();
 
-	PilhaLista<String> tags = new PilhaLista<>();
+	PilhaLista<String> tags;
 
 	/**
 	 * Launch the application.
@@ -67,6 +72,7 @@ public class HtmlAnalyser {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
+		tags = new PilhaLista<>();
 		frame = new JFrame();
 		frame.setResizable(false);
 		frame.getContentPane().setLayout(null);
@@ -128,88 +134,126 @@ public class HtmlAnalyser {
 		tags.liberar();
 		BufferedReader br = new BufferedReader(new FileReader(file));
 		String test;
+		StringBuilder builder = new StringBuilder();
 		while ((test = br.readLine()) != null) {
-			checkLine(test);
+			builder.append(test);
 		}
 		br.close();
+		String html = builder.toString();
+		builder = new StringBuilder();
+		try {
+			analyse(html);
+			if (tags.estaVazia()) 
+				builder.append("O arquivo está bem formatado");
+		} catch (Exception e) {
+			builder.append(e);
+		}
 		long timefin = new Date().getTime();
-		txtMsg.append("\nTime: " + (timefin - timeini));
-	}
-
-	private void checkLine(String test) {
-		StringBuilder builder = new StringBuilder();
-		System.out.println("="+test+"=");
-		test = test.replaceAll("<", "|<");
-		System.out.println("=="+test+"==");
-		test = test.replaceAll(">", ">;");
-		System.out.println("==="+test+"===");
-		test = test.replaceAll(";\\|", ";");
-		System.out.println("===="+test+"====");
-		test = test.replaceAll("\\|", ";");
-		System.out.println("====="+test+"=====");
-		String[] resu = test.split(";");
-		System.out.println(resu.length);
-		String erro = null;
-
-		for (int i = 0; i < resu.length; i++) {
-			String aux = resu[i].toLowerCase();
-			System.out.println(aux);
-			if (!aux.matches(VALID_TAG))
-				continue;
-			System.out.println(aux);
-			if (checkTagSingleton(aux)) {
-				// AQUI É TAG SINGLETON (SEM TAG FINAL)
-				String tag = getNameTag(aux);
-				// AQUI ESTÁ SOMENTE O NOME DA TAG SINGLETON
-				// PRECISA APENAS GUARDAR E CONTABILIZAR
-				tableModel.addQuantidade(tag);
-				continue;
-			}
-			// DAQUI PRA FRENTE É TAG NORMAL
-			String tag = getNameTag(aux);
-			// AQUI ESTÁ SOMENTE O NOME DA TAG DUPLA (inicial e final)
-			if (!tag.startsWith("/")) {
-				tags.push(tag);
-				System.out.println("tamanho: "+tags.tamanho());
-				continue;
-			}
-			// PRECISA VERIFICAR SE ELA FECHA CORRETAMENTE E CONTABILIZAR
-			// CASO NÃO FECHAR CORRETAMENTE RETORNA SEU RESPECTIVO ERRO
-			if (tags.tamanho() == 0) {
-				builder.append("final");
-				break;
-			}
-			if (tags.peek().equals(tag.substring(1))) {
-				tags.pop();
-				tableModel.addQuantidade(tag.substring(1));
-				continue;
-			} else {
-				erro = "Erro: Não é o final certo, deve ter a tag </" + tags.peek() + ">";
-				break;
-			}
-		}
-		if (tags.tamanho() != 0 && erro == null) {
-			erro = "Erro: Não foi achado as tags:\n";
-			while (!tags.estaVazia()) {
-				erro += "</" + tags.pop() + ">\n";
-			}
-
-		}
-		if (erro != null)
-			builder.append(erro);
-		else
-			builder.append("O arquivo está bem formatado");
-
+		builder.append("\nTime: " + (timefin - timeini));
 		txtMsg.setText(builder.toString());
 	}
 
-	private static String getNameTag(String string) {
-		String[] atr = string.split("\\s");
-		String tag = atr[0].substring(1);
-		return tag = tag.replaceAll(">", "").toLowerCase();
-	}
+	private void analyse(String test) throws Exception {
 
-	private static boolean checkTagSingleton(String s) {
-		return s.matches(RG_TAG_SINGLETONS);
+		for (int i = 0; i < test.length(); i++) {
+			char ch = test.charAt(i);
+
+			if (ch == '<') {
+
+				i++;
+
+				if (i >= test.length()) {
+					break;
+				}
+				ch = test.charAt(i);
+
+				if (ch == '!') {
+					// deve ser comentário
+					StringBuilder builder = new StringBuilder();
+					boolean comentario = false;
+					for (; i < test.length(); i++) {
+						char ant = test.charAt(i - 1);
+						ch = test.charAt(i);
+						char dp = 0;
+						if (i + 1 < test.length())
+							dp = test.charAt(i + 1);
+						if (ch == '>' && !comentario) {
+							break;
+						} else if (ant == '!' && ch == '-' && dp == '-') {
+							comentario = true;
+						} else if (ant == '-' && ch == '-' && dp == '>') {
+							break;
+						} else if ((ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r') && !comentario) {
+							break;
+						} else {
+							builder.append(ch);
+						}
+					}
+					if(!comentario) {
+						String tag = builder.toString();
+						if (tag.equals(DOCTYPE)) {
+							System.out.println(tag);
+							tableModel.addQuantidade(tag);
+						}
+					}
+				} else if (ch == '/') {
+					// deve ser final
+					i++;
+
+					if (i >= test.length()) {
+						break;
+					}
+					StringBuilder builder = new StringBuilder();
+					for (; i < test.length(); i++) {
+						ch = test.charAt(i);
+						if (ch == '>') {
+							break;
+						} else if (ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r') {
+							break;
+						} else {
+							builder.append(ch);
+						}
+					}
+					String tag = builder.toString();
+					if (tags.peek().equals(tag)) {
+						System.out.println(tag);
+						tableModel.addQuantidade(tags.pop());
+					}else
+						throw new Exception(
+								"Erro: Tag inesperada </" + tag + "> , tag esperada </" + tags.peek() + ">");
+				} else {
+					StringBuilder builder = new StringBuilder();
+					for (; i < test.length(); i++) {
+						ch = test.charAt(i);
+						if (ch == '>') {
+							break;
+						} else if (ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r') {
+							break;
+						} else {
+							builder.append(ch);
+						}
+					}
+					String tag = builder.toString();
+					if (tag.matches(RG_TAG_SINGLETONS))
+						tableModel.addQuantidade(tag);
+					else if (!tag.isEmpty() && tag.matches("\\w+")) {
+						tags.push(tag);
+					}
+				}
+			} else {
+
+			}
+		}
+		if (tags.tamanho() != 0) {
+			boolean plural = tags.tamanho() > 1;
+			StringBuilder builder = new StringBuilder("Erro: ");
+			builder.append("Falta" + (plural ? "m" : "") + " a" + (plural ? "s" : "") + " tag" + (plural ? "s" : "")
+					+ " : \n");
+			while (tags.tamanho() != 0) {
+				String tag = tags.pop();
+				builder.append("</" + tag + ">");
+			}
+			throw new Exception(builder.toString());
+		}
 	}
 }
