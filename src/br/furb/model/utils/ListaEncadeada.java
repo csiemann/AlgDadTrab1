@@ -24,7 +24,6 @@ public class ListaEncadeada<T> {
 	public void exibir() {
 		NoListaE<T> p = primeiro;
 		while (p != null) {
-			System.out.println(p.getInfo());
 			p = p.getProximo();
 		}
 	}

@@ -136,14 +136,14 @@ public class HtmlAnalyser {
 		String test;
 		StringBuilder builder = new StringBuilder();
 		while ((test = br.readLine()) != null) {
-			builder.append(test);
+			builder.append(test + "\n");
 		}
 		br.close();
 		String html = builder.toString();
 		builder = new StringBuilder();
 		try {
 			analyse(html);
-			if (tags.estaVazia()) 
+			if (tags.estaVazia())
 				builder.append("O arquivo está bem formatado");
 		} catch (Exception e) {
 			builder.append(e);
@@ -171,6 +171,8 @@ public class HtmlAnalyser {
 					// deve ser comentário
 					StringBuilder builder = new StringBuilder();
 					boolean comentario = false;
+					boolean nomeTag = true;
+					boolean valido = false;
 					for (; i < test.length(); i++) {
 						char ant = test.charAt(i - 1);
 						ch = test.charAt(i);
@@ -178,21 +180,22 @@ public class HtmlAnalyser {
 						if (i + 1 < test.length())
 							dp = test.charAt(i + 1);
 						if (ch == '>' && !comentario) {
+							valido = true;
 							break;
 						} else if (ant == '!' && ch == '-' && dp == '-') {
 							comentario = true;
 						} else if (ant == '-' && ch == '-' && dp == '>') {
 							break;
 						} else if ((ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r') && !comentario) {
-							break;
-						} else {
+							nomeTag = false;
+							continue;
+						} else if (nomeTag) {
 							builder.append(ch);
 						}
 					}
-					if(!comentario) {
+					if (!comentario && valido) {
 						String tag = builder.toString();
 						if (tag.equals(DOCTYPE)) {
-							System.out.println(tag);
 							tableModel.addQuantidade(tag);
 						}
 					}
@@ -203,33 +206,42 @@ public class HtmlAnalyser {
 					if (i >= test.length()) {
 						break;
 					}
+					boolean nomeTag = true;
+					boolean valido = false;
 					StringBuilder builder = new StringBuilder();
 					for (; i < test.length(); i++) {
 						ch = test.charAt(i);
 						if (ch == '>') {
+							valido = true;
 							break;
 						} else if (ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r') {
-							break;
-						} else {
+							nomeTag = false;
+							continue;
+						} else if (nomeTag) {
 							builder.append(ch);
 						}
 					}
 					String tag = builder.toString();
+					if (!valido)
+						throw new Exception("Erro: Tag final inválida " + tag);
+					if (tags.estaVazia())
+						throw new Exception("Erro: Tag final a mais: </" + tag + ">");
 					if (tags.peek().equals(tag)) {
-						System.out.println(tag);
 						tableModel.addQuantidade(tags.pop());
-					}else
+					} else
 						throw new Exception(
 								"Erro: Tag inesperada </" + tag + "> , tag esperada </" + tags.peek() + ">");
 				} else {
 					StringBuilder builder = new StringBuilder();
+					boolean nomeTag = true;
 					for (; i < test.length(); i++) {
 						ch = test.charAt(i);
 						if (ch == '>') {
 							break;
 						} else if (ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r') {
-							break;
-						} else {
+							nomeTag = false;
+							continue;
+						} else if (nomeTag) {
 							builder.append(ch);
 						}
 					}
@@ -246,7 +258,7 @@ public class HtmlAnalyser {
 		}
 		if (tags.tamanho() != 0) {
 			boolean plural = tags.tamanho() > 1;
-			StringBuilder builder = new StringBuilder("Erro: ");
+			StringBuilder builder = new StringBuilder();
 			builder.append("Falta" + (plural ? "m" : "") + " a" + (plural ? "s" : "") + " tag" + (plural ? "s" : "")
 					+ " : \n");
 			while (tags.tamanho() != 0) {
