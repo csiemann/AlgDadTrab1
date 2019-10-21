@@ -40,4 +40,9 @@ public class PilhaLista<T> implements Pilha<T>{
 		return lista.obterComprimento();
 	}
 
+	@Override
+	public String toString() {
+		return lista.toString();
+	}
+	
 }
