@@ -9,8 +9,8 @@ public class TableModelTag extends AbstractTableModel {
 	private static final long serialVersionUID = 1L;
 
 	// TODO NESSESITA DA LISTA ENCADEADA
-	ListaEncadeada<Tag> tags = new ListaEncadeada<>();
-	String colunas[] = {"Tag", "Número de ocorrências"};
+	private ListaEncadeada<Tag> tags = new ListaEncadeada<>();
+	private String colunas[] = {"Tag", "Número de ocorrências"};
 	
 	@Override
 	public String getColumnName(int column) {

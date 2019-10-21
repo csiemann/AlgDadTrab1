@@ -24,6 +24,7 @@ import javax.swing.JTextField;
 import javax.swing.table.JTableHeader;
 
 import br.furb.model.utils.PilhaLista;
+import br.furb.model.utils.TagException;
 import br.furb.tablemodel.TableModelTag;
 import javax.swing.SwingConstants;
 
