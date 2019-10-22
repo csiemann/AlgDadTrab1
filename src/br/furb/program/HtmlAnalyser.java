@@ -37,7 +37,7 @@ import javax.swing.SwingConstants;
 public class HtmlAnalyser {
 
 	private static final String DOCTYPE = "!DOCTYPE";
-	private static String RG_TAG_SINGLETONS = "(meta)|(base)|(br)|(col)|(command)|(embed)|(hr)|(img)|(input)|(link)|(param)|(source)";
+	private static String RG_TAG_SINGLETONS = "(?i)(meta)|(base)|(br)|(col)|(command)|(embed)|(hr)|(img)|(input)|(link)|(param)|(source)";
 	private static String newLine = System.getProperty("line.separator");
 
 	private JFrame frame;
@@ -196,8 +196,8 @@ public class HtmlAnalyser {
 
 	private String getFile() {
 		String aux = txtArq.getText();
-		if (aux.startsWith("file://"))
-			aux = aux.substring("file://".length());
+		if (aux.startsWith("file:///"))
+			aux = aux.substring("file:///".length());
 		if(url.equals(aux)) {
 			return aux;
 		}
@@ -248,7 +248,7 @@ public class HtmlAnalyser {
 		lblTime.setText("Time: " + time +"ms");
 		lblMin.setText("Min time: " + (mintime) + "ms");
 		lblMax.setText("Max time: " + (maxtime) + "ms");
-		txtMsg.setText(builder.toString());
+		txtMsg.setText(builder.toString() + tags);
 	}
 
 	private void analyzeText(String test) throws TagException {
@@ -330,7 +330,7 @@ public class HtmlAnalyser {
 							builder.append(ch);
 						}
 					}
-					String tag = builder.toString();
+					String tag = builder.toString().toLowerCase();
 					if (!valido)
 						throw new TagException("Erro: Tag inválida" + newLine + "</" + tag);
 
@@ -348,18 +348,12 @@ public class HtmlAnalyser {
 								+ tags.peek() + ">");
 					}
 				} else {
-					i++;
+					if (ch == '=' || ch == '-' || ch == '+' || ch == '*' || ch == ' ')
+						continue;
 
-					if (i >= test.length()) {
-						break;
-					}
-
-					i--;
 
 					ch = test.charAt(i);
 
-					if (ch == '=' || ch == '-' || ch == '+' || ch == '*' || ch == ' ')
-						continue;
 
 					StringBuilder builder = new StringBuilder();
 					boolean nomeTag = true;
@@ -379,7 +373,7 @@ public class HtmlAnalyser {
 							builder.append(ch);
 						}
 					}
-					String tag = builder.toString();// DECRALA O NOME DA TAG
+					String tag = builder.toString().toLowerCase();// DECRALA O NOME DA TAG
 					if(script) 
 						continue;
 					if (!valido)// TAG INVÁLIDA <XX
