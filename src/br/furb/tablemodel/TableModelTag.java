@@ -10,13 +10,13 @@ public class TableModelTag extends AbstractTableModel {
 
 	// TODO NESSESITA DA LISTA ENCADEADA
 	private ListaEncadeada<Tag> tags = new ListaEncadeada<>();
-	private String colunas[] = {"Tag", "Número de ocorrências"};
-	
+	private String colunas[] = { "Tag", "Número de ocorrências" };
+
 	@Override
 	public String getColumnName(int column) {
 		return colunas[column];
 	}
-	
+
 	@Override
 	public int getColumnCount() {
 		return colunas.length;
@@ -40,14 +40,14 @@ public class TableModelTag extends AbstractTableModel {
 			return tags.obterInfo(linha);
 		}
 	}
-	
+
 	public void addRow(Tag info) {
 		// TODO ADICIONAR INFORMAÇÕES NA LISTA
 		tags.inserir(info);
 		fireTableDataChanged();
 	}
-	
-	public void addQuantidade(String a){
+
+	public void addQuantidade(String a) {
 		for (int i = 0; i < tags.obterComprimento(); i++) {
 			Tag aux = tags.obterInfo(i);
 			if (aux.getNome().equals(a)) {
@@ -58,12 +58,12 @@ public class TableModelTag extends AbstractTableModel {
 		}
 		addRow(new Tag(a, 1));
 	}
-	
-	public void rmvQuantidade(String a){
+
+	public void rmvQuantidade(String a) {
 		for (int i = 0; i < tags.obterComprimento(); i++) {
 			Tag aux = tags.obterInfo(i);
 			if (aux.getNome().equals(a)) {
-				if(aux.getQuantidade() == 1) {
+				if (aux.getQuantidade() == 1) {
 					tags.retirar(aux);
 					return;
 				}

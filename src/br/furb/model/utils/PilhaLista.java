@@ -1,13 +1,13 @@
 package br.furb.model.utils;
 
-public class PilhaLista<T> implements Pilha<T>{
+public class PilhaLista<T> implements Pilha<T> {
 
 	private ListaEncadeada<T> lista;
 
 	public PilhaLista() {
 		lista = new ListaEncadeada<>();
 	}
-	
+
 	@Override
 	public void push(T info) {
 		lista.inserir(info);
@@ -15,7 +15,8 @@ public class PilhaLista<T> implements Pilha<T>{
 
 	@Override
 	public T pop() {
-		if (estaVazia()) throw new PilhaVaziaException("A pilha está vazia!");
+		if (estaVazia())
+			throw new PilhaVaziaException("A pilha está vazia!");
 		T info = lista.getPrimeiro().getInfo();
 		lista.retirar(info);
 		return info;
@@ -35,7 +36,7 @@ public class PilhaLista<T> implements Pilha<T>{
 	public void liberar() {
 		lista = new ListaEncadeada<>();
 	}
-	
+
 	public int tamanho() {
 		return lista.obterComprimento();
 	}
@@ -44,5 +45,5 @@ public class PilhaLista<T> implements Pilha<T>{
 	public String toString() {
 		return lista.toString();
 	}
-	
+
 }

@@ -21,12 +21,12 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.table.JTableHeader;
 
 import br.furb.model.utils.PilhaLista;
 import br.furb.model.utils.TagException;
 import br.furb.tablemodel.TableModelTag;
-import javax.swing.SwingConstants;
 
 /*
  * Data: 16 de out de 2019
@@ -46,14 +46,14 @@ public class HtmlAnalyser {
 	private JTable table;
 	private String url = "";
 	private TableModelTag tableModel = new TableModelTag();
-	JLabel lblMin;
-	JLabel lblMax;
-	JLabel lblTime;
+	private JLabel lblMin;
+	private JLabel lblMax;
+	private JLabel lblTime;
 
-	long maxtime = 0;
-	long mintime = Long.MAX_VALUE;
+	private long maxtime = 0;
+	private long mintime = Long.MAX_VALUE;
 
-	PilhaLista<String> tags;
+	private PilhaLista<String> tags;
 	private JLabel lblUrl;
 
 	/**
@@ -131,19 +131,19 @@ public class HtmlAnalyser {
 		tabela.add(scrollPane, BorderLayout.CENTER);
 		tabela.setBounds(30, 250, 440, 180);
 		frame.getContentPane().add(tabela);
-		
+
 		lblMin = new JLabel("");
 		lblMin.setBounds(333, 442, 137, 15);
 		frame.getContentPane().add(lblMin);
-		
+
 		lblMax = new JLabel("");
 		lblMax.setBounds(184, 442, 137, 15);
 		frame.getContentPane().add(lblMax);
-		
+
 		lblTime = new JLabel("");
 		lblTime.setBounds(30, 442, 137, 15);
 		frame.getContentPane().add(lblTime);
-		
+
 		lblUrl = new JLabel("");
 		lblUrl.setHorizontalAlignment(SwingConstants.CENTER);
 		lblUrl.setBounds(30, 225, 440, 25);
@@ -159,7 +159,7 @@ public class HtmlAnalyser {
 					if (key == KeyEvent.VK_ENTER) {
 						startAnalyzing();
 					}
-					if(modKey == KeyEvent.CTRL_DOWN_MASK) {
+					if (modKey == KeyEvent.CTRL_DOWN_MASK) {
 						if (key == KeyEvent.VK_D) {
 							closeProgram();
 						}
@@ -196,9 +196,9 @@ public class HtmlAnalyser {
 
 	private String getFile() {
 		String aux = txtArq.getText();
-		if (aux.startsWith("file:///"))
-			aux = aux.substring("file:///".length());
-		if(url.equals(aux)) {
+		if (aux.startsWith("file://"))
+			aux = aux.substring("file://".length());
+		if (url.equals(aux)) {
 			return aux;
 		}
 		maxtime = 0;
@@ -241,21 +241,20 @@ public class HtmlAnalyser {
 		long nanofin = System.currentTimeMillis();
 //		builder.append(newLine + "Time: " + (timefin - timeini));
 		long time = nanofin - nanoini;
-		if(mintime > time)
+		if (mintime > time)
 			mintime = time;
-		if(maxtime < time)
+		if (maxtime < time)
 			maxtime = time;
-		lblTime.setText("Time: " + time +"ms");
+		lblTime.setText("Time: " + time + "ms");
 		lblMin.setText("Min time: " + (mintime) + "ms");
 		lblMax.setText("Max time: " + (maxtime) + "ms");
-		txtMsg.setText(builder.toString() + tags);
+		txtMsg.setText(builder.toString());
 	}
 
 	private void analyzeText(String test) throws TagException {
 		boolean script = false;
 		for (int i = 0; i < test.length(); i++) {
 			char ch = test.charAt(i);
-
 			if (ch == '<') {
 
 				i++;
@@ -273,12 +272,16 @@ public class HtmlAnalyser {
 					boolean valido = false;
 					for (; i < test.length(); i++) {
 						char ant = 0;
+
 						if (i - 1 != -1)
 							ant = test.charAt(i - 1);
+
 						ch = test.charAt(i);
+
 						char dp = 0;
 						if (i + 1 < test.length())
 							dp = test.charAt(i + 1);
+
 						if (ch == '>' && !comentario) {
 							valido = true;
 							break;
@@ -305,7 +308,7 @@ public class HtmlAnalyser {
 							tableModel.addQuantidade(tag);
 						}
 					}
-				} else if (ch == '/') {	// DEVE SER FINAL
+				} else if (ch == '/') { // DEVE SER FINAL
 
 					i++;
 
@@ -317,6 +320,7 @@ public class HtmlAnalyser {
 					StringBuilder builder = new StringBuilder();
 					for (; i < test.length(); i++) {
 						ch = test.charAt(i);
+
 						if (ch == '>') {
 							valido = true;
 							break;
@@ -331,6 +335,7 @@ public class HtmlAnalyser {
 						}
 					}
 					String tag = builder.toString().toLowerCase();
+
 					if (!valido)
 						throw new TagException("Erro: Tag inválida" + newLine + "</" + tag);
 
@@ -340,20 +345,17 @@ public class HtmlAnalyser {
 					if (tags.peek().equals(tag)) {
 						if (tag.equals("script"))
 							script = false;
-						if (!script) 
+						if (!script)
 							tableModel.addQuantidade(tags.pop());
 					} else {
-						if(script) continue;
+						if (script)
+							continue;
 						throw new TagException("Erro: Tag inesperada" + newLine + "</" + tag + "> , tag esperada </"
 								+ tags.peek() + ">");
 					}
 				} else {
 					if (ch == '=' || ch == '-' || ch == '+' || ch == '*' || ch == ' ')
 						continue;
-
-
-					ch = test.charAt(i);
-
 
 					StringBuilder builder = new StringBuilder();
 					boolean nomeTag = true;
@@ -374,13 +376,13 @@ public class HtmlAnalyser {
 						}
 					}
 					String tag = builder.toString().toLowerCase();// DECRALA O NOME DA TAG
-					if(script) 
+					if (script)
 						continue;
 					if (!valido)// TAG INVÁLIDA <XX
 						throw new TagException("Erro: Tag inválida" + newLine + "<" + tag);
 					if (tag.matches(RG_TAG_SINGLETONS))// TAGS SEM TAG FINAIS
 						tableModel.addQuantidade(tag);
-					else if (!tag.isEmpty() && tag.matches("\\w+")) {// PILHA A TAG INICIAL VÁLIDA
+					else {// PILHA A TAG INICIAL VÁLIDA
 						if (tag.equals("script"))// PARA IGNORAR TEXTO DENTRO DO <script>XX</script>
 							script = true;
 						tags.push(tag);
@@ -401,10 +403,11 @@ public class HtmlAnalyser {
 			}
 			throw new TagException(builder.toString());
 		}
-		
+
 	}
+
 	private void closeProgram() {
-		frame.setVisible(false); //you can't see me!
-		frame.dispose(); //Destroy the JFrame object
+		frame.setVisible(false); // you can't see me!
+		frame.dispose(); // Destroy the JFrame object
 	}
 }
