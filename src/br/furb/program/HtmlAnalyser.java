@@ -354,7 +354,7 @@ public class HtmlAnalyser {
 								+ tags.peek() + ">");
 					}
 				} else {
-					if (ch == '=' || ch == '-' || ch == '+' || ch == '*' || ch == ' ')
+					if (!Character.isLetter(ch))
 						continue;
 
 					StringBuilder builder = new StringBuilder();
