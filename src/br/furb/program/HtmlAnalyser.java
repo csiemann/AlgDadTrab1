@@ -231,7 +231,7 @@ public class HtmlAnalyser {
 		try {
 			analyzeText(html);
 			if (tags.estaVazia())
-				builder.append("O arquivo est· bem formatado");
+				builder.append("O arquivo est√° bem formatado");
 			txtMsg.setForeground(Color.green);
 		} catch (TagException e) {
 			txtMsg.setForeground(Color.red);
@@ -265,7 +265,7 @@ public class HtmlAnalyser {
 				ch = test.charAt(i);
 
 				if (ch == '!') {
-					// deve ser coment·rio
+					// deve ser coment√°rio
 					StringBuilder builder = new StringBuilder();
 					boolean comentario = false;
 					boolean nomeTag = true;
@@ -302,7 +302,7 @@ public class HtmlAnalyser {
 					}
 					String tag = builder.toString();
 					if (!valido)
-						throw new TagException("Erro: Tag inv·lida" + newLine + "<" + tag);
+						throw new TagException("Erro: Tag inv√°lida" + newLine + "<" + tag);
 					if (!comentario && valido && !script) {
 						if (tag.equals(DOCTYPE)) {
 							tableModel.addQuantidade(tag);
@@ -337,7 +337,7 @@ public class HtmlAnalyser {
 					String tag = builder.toString().toLowerCase();
 
 					if (!valido)
-						throw new TagException("Erro: Tag inv·lida" + newLine + "</" + tag);
+						throw new TagException("Erro: Tag inv√°lida" + newLine + "</" + tag);
 
 					if (tags.estaVazia())
 						throw new TagException("Erro: Tag final a mais:" + newLine + "</" + tag + ">");
@@ -371,18 +371,18 @@ public class HtmlAnalyser {
 						} else if (ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r') {// TERMINA A NOME DA "TAG"
 							nomeTag = false;
 							continue;
-						} else if (nomeTag) {// ADICIONA O CAR¡CTER PARA O NOME DA TAG
+						} else if (nomeTag) {// ADICIONA O CAR√ÅCTER PARA O NOME DA TAG
 							builder.append(ch);
 						}
 					}
 					String tag = builder.toString().toLowerCase();// DECRALA O NOME DA TAG
 					if (script)
 						continue;
-					if (!valido)// TAG INV¡LIDA <XX
-						throw new TagException("Erro: Tag inv·lida" + newLine + "<" + tag);
+					if (!valido)// TAG INV√ÅLIDA <XX
+						throw new TagException("Erro: Tag inv√°lida" + newLine + "<" + tag);
 					if (tag.matches(RG_TAG_SINGLETONS))// TAGS SEM TAG FINAIS
 						tableModel.addQuantidade(tag);
-					else {// PILHA A TAG INICIAL V¡LIDA
+					else {// PILHA A TAG INICIAL V√ÅLIDA
 						if (tag.equals("script"))// PARA IGNORAR TEXTO DENTRO DO <script>XX</script>
 							script = true;
 						tags.push(tag);

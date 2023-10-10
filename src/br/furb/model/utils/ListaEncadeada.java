@@ -74,7 +74,7 @@ public class ListaEncadeada<T> {
 			pos++;
 			p = p.getProximo();
 		}
-		throw new IndexOutOfBoundsException("N„o h· essa posiÁ„o nesta lista!");
+		throw new IndexOutOfBoundsException("N√£o h√° essa posi√ß√£o nesta lista!");
 	}
 
 	public T obterInfo(int index) {

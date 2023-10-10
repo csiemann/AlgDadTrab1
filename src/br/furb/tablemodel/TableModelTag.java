@@ -8,9 +8,9 @@ import br.furb.model.utils.ListaEncadeada;
 public class TableModelTag extends AbstractTableModel {
 	private static final long serialVersionUID = 1L;
 
-	// TODO NESSESITA DA LISTA ENCADEADA
+	// TODO NECESSITA DA LISTA ENCADEADA
 	private ListaEncadeada<Tag> tags = new ListaEncadeada<>();
-	private String colunas[] = { "Tag", "Número de ocorrências" };
+	private String colunas[] = { "Tag", "NÃºmero de ocorrÃªncias" };
 
 	@Override
 	public String getColumnName(int column) {
@@ -30,7 +30,7 @@ public class TableModelTag extends AbstractTableModel {
 
 	@Override
 	public Object getValueAt(int linha, int coluna) {
-		// TODO PEGAR INFORMAÇÕES DA LISTA
+		// TODO PEGAR INFORMAÃ‡Ã•ES DA LISTA
 		switch (coluna) {
 		case 0:
 			return tags.obterInfo(linha).getNome();
@@ -42,7 +42,7 @@ public class TableModelTag extends AbstractTableModel {
 	}
 
 	public void addRow(Tag info) {
-		// TODO ADICIONAR INFORMAÇÕES NA LISTA
+		// TODO ADICIONAR INFORMAÃ‡Ã•ES NA LISTA
 		tags.inserir(info);
 		fireTableDataChanged();
 	}

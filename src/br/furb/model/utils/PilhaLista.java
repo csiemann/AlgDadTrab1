@@ -16,7 +16,7 @@ public class PilhaLista<T> implements Pilha<T> {
 	@Override
 	public T pop() {
 		if (estaVazia())
-			throw new PilhaVaziaException("A pilha est· vazia!");
+			throw new PilhaVaziaException("A pilha est√° vazia!");
 		T info = lista.getPrimeiro().getInfo();
 		lista.retirar(info);
 		return info;
